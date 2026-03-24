@@ -12,6 +12,7 @@ export default function CartPage() {
   const [orderType, setOrderType] = useState('DINE_IN');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [tableNumber, setTableNumber] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   
@@ -34,8 +35,8 @@ export default function CartPage() {
     e.preventDefault();
     
     // Validate
-    if (!customerName || !customerPhone) {
-      alert('Please enter your name and phone number');
+    if (!customerName || !customerPhone || !customerEmail) {
+      alert('Please enter your name, phone, and email');
       return;
     }
     
@@ -54,6 +55,7 @@ export default function CartPage() {
       orderType,
       customerName,
       customerPhone,
+      customerEmail,
       tableNumber: orderType === 'DINE_IN' ? tableNumber : '',
       customerAddress: orderType === 'DELIVERY' ? customerAddress : '',
     }));
@@ -134,6 +136,17 @@ export default function CartPage() {
                 onChange={e => setCustomerPhone(e.target.value)}
                 placeholder="10-digit number"
                 pattern="[0-9]{10}"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Email Address</label>
+              <input 
+                type="email" 
+                required 
+                value={customerEmail}
+                onChange={e => setCustomerEmail(e.target.value.toLowerCase())}
+                placeholder="you@email.com"
               />
             </div>
             

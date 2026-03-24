@@ -10,14 +10,19 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [customerToken, setCustomerToken] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
+    
+    // Simple check for auth state (re-runs on pathname change)
+    setCustomerToken(localStorage.getItem('customer_token'));
+    
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -39,6 +44,11 @@ export default function Navbar() {
         <div className="navbar-links">
           <Link href="/">Home</Link>
           <Link href="/menu">Menu</Link>
+          {customerToken ? (
+            <Link href="/my-orders">My Orders</Link>
+          ) : (
+            <Link href="/login">Login</Link>
+          )}
           <Link href="/cart" className="cart-btn">
             🛒 Cart
             {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
@@ -57,6 +67,11 @@ export default function Navbar() {
           <div className="navbar-links open" style={{ display: 'flex' }}>
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
             <Link href="/menu" onClick={() => setIsMobileMenuOpen(false)}>Menu</Link>
+            {customerToken ? (
+              <Link href="/my-orders" onClick={() => setIsMobileMenuOpen(false)}>My Orders</Link>
+            ) : (
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>Login</Link>
+            )}
             <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               🛒 Cart 
               {totalItems > 0 && <span style={{ background: 'var(--primary)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>{totalItems}</span>}

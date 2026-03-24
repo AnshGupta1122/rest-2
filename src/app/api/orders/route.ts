@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { customerName, customerPhone, customerAddress, tableNumber, type, items, paymentMethod, notes } = body;
+    const { customerName, customerPhone, customerEmail, customerAddress, tableNumber, type, items, paymentMethod, notes } = body;
 
     if (!customerName || !customerPhone || !items || items.length === 0) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
         type: type || 'DINE_IN',
         customerName,
         customerPhone,
+        customerEmail: customerEmail || null,
         customerAddress: customerAddress || null,
         tableNumber: tableNumber || null,
         items: JSON.stringify(orderItems),

@@ -39,6 +39,7 @@ model Order {
   status          String   @default("PENDING")
   customerName    String
   customerPhone   String
+  customerEmail   String?
   customerAddress String?
   tableNumber     String?
   items           String
@@ -62,4 +63,21 @@ model Settings {
   id    String @id @default(cuid())
   key   String @unique
   value String
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  phone     String?
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }

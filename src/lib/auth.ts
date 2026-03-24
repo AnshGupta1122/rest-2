@@ -28,3 +28,23 @@ export async function getAdminFromRequest(request: NextRequest) {
   const token = authHeader.substring(7);
   return verifyToken(token);
 }
+
+export async function signCustomerToken(payload: { email: string }) {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('30d')
+    .sign(JWT_SECRET);
+}
+
+export async function getCustomerFromRequest(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) return null;
+  const token = authHeader.substring(7);
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload as { email: string };
+  } catch {
+    return null;
+  }
+}
