@@ -1,18 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function CustomerLogin() {
+function CustomerLoginForm() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState(1); // 1 = Email, 2 = OTP
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get('returnTo') || '/my-orders';
@@ -23,21 +23,21 @@ export default function CustomerLogin() {
       setError('Please enter a valid email address');
       return;
     }
-    
+
     setLoading(true);
     setError('');
-    
+
     try {
       const res = await fetch('/api/auth/customer/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.toLowerCase() })
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
-      
+
       setStep(2);
       setMessage(`OTP code sent to ${email}. Check your inbox!`);
       if (data.previewUrl) setPreviewUrl(data.previewUrl);
@@ -54,25 +54,24 @@ export default function CustomerLogin() {
       setError('Please enter the full OTP');
       return;
     }
-    
+
     setLoading(true);
     setError('');
-    
+
     try {
       const res = await fetch('/api/auth/customer/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.toLowerCase(), code: otp })
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.error || 'Invalid OTP');
-      
-      // Save customer token and email
+
       localStorage.setItem('customer_token', data.token);
       localStorage.setItem('customer_email', data.email);
-      
+
       router.push(returnTo);
     } catch (err: any) {
       setError(err.message);
@@ -114,7 +113,6 @@ export default function CustomerLogin() {
                 autoFocus
               />
             </div>
-
             <button
               type="submit"
               className="btn btn-primary"
@@ -138,17 +136,15 @@ export default function CustomerLogin() {
                 style={{ textAlign: 'center', fontSize: '1.2rem', letterSpacing: '4px', fontWeight: 700 }}
               />
             </div>
-
             <div style={{ textAlign: 'center', marginBottom: 'var(--space-xl)' }}>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => { setStep(1); setOtp(''); setError(''); setMessage(''); setPreviewUrl(''); }}
                 style={{ color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 Use a different email
               </button>
             </div>
-
             <button
               type="submit"
               className="btn btn-primary"
@@ -159,15 +155,23 @@ export default function CustomerLogin() {
             </button>
           </form>
         )}
-        
+
         <p style={{ textAlign: 'center', marginTop: 'var(--space-lg)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
           By continuing, you agree to our Terms of Service.
         </p>
-        
+
         <div style={{ textAlign: 'center', marginTop: 'var(--space-xl)', paddingTop: 'var(--space-lg)', borderTop: '1px solid var(--border-light)' }}>
           <Link href="/" className="btn btn-outline btn-sm">Return Home</Link>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CustomerLogin() {
+  return (
+    <Suspense fallback={null}>
+      <CustomerLoginForm />
+    </Suspense>
   );
 }
