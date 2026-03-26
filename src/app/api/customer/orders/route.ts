@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     }
 
     const orders = await prisma.order.findMany({
-      where: { customerEmail: customer.email },
+      where: { customerPhone: customer.phone },
       orderBy: { createdAt: 'desc' }
     });
 
