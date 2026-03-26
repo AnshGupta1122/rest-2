@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 function CustomerLoginForm() {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -19,8 +19,8 @@ function CustomerLoginForm() {
 
   const requestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address');
+    if (phone.length < 10) {
+      setError('Please enter a valid phone number');
       return;
     }
 
@@ -31,7 +31,7 @@ function CustomerLoginForm() {
       const res = await fetch('/api/auth/customer/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.toLowerCase() })
+        body: JSON.stringify({ phone })
       });
 
       const data = await res.json();
@@ -39,7 +39,11 @@ function CustomerLoginForm() {
       if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
 
       setStep(2);
-      setMessage(`OTP code sent to ${email}. Check your inbox!`);
+      if (data.mockOtp && !data.previewUrl) {
+        setMessage(`[Dev Mode] Your OTP is: ${data.mockOtp}`);
+      } else {
+        setMessage(`OTP code sent to ${phone}. Check your messages!`);
+      }
       if (data.previewUrl) setPreviewUrl(data.previewUrl);
     } catch (err: any) {
       setError(err.message);
@@ -62,7 +66,7 @@ function CustomerLoginForm() {
       const res = await fetch('/api/auth/customer/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.toLowerCase(), code: otp })
+        body: JSON.stringify({ phone, code: otp })
       });
 
       const data = await res.json();
@@ -70,7 +74,7 @@ function CustomerLoginForm() {
       if (!res.ok) throw new Error(data.error || 'Invalid OTP');
 
       localStorage.setItem('customer_token', data.token);
-      localStorage.setItem('customer_email', data.email);
+      localStorage.setItem('customer_phone', data.phone);
 
       router.push(returnTo);
     } catch (err: any) {
@@ -103,12 +107,12 @@ function CustomerLoginForm() {
         {step === 1 ? (
           <form onSubmit={requestOtp}>
             <div className="form-group" style={{ marginBottom: 'var(--space-xl)' }}>
-              <label>Email Address</label>
+              <label>Phone Number</label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@email.com"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').substring(0, 15))}
+                placeholder="10-digit mobile number"
                 required
                 autoFocus
               />
@@ -117,7 +121,7 @@ function CustomerLoginForm() {
               type="submit"
               className="btn btn-primary"
               style={{ width: '100%', fontSize: '1.1rem', padding: '14px' }}
-              disabled={loading || !email.includes('@')}
+              disabled={loading || phone.length < 10}
             >
               {loading ? 'Sending OTP...' : 'Send Magic Code'}
             </button>
@@ -142,7 +146,7 @@ function CustomerLoginForm() {
                 onClick={() => { setStep(1); setOtp(''); setError(''); setMessage(''); setPreviewUrl(''); }}
                 style={{ color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
               >
-                Use a different email
+                Use a different phone number
               </button>
             </div>
             <button

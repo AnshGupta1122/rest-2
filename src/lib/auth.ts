@@ -29,7 +29,7 @@ export async function getAdminFromRequest(request: NextRequest) {
   return verifyToken(token);
 }
 
-export async function signCustomerToken(payload: { email: string }) {
+export async function signCustomerToken(payload: { phone: string }) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -43,7 +43,7 @@ export async function getCustomerFromRequest(request: NextRequest) {
   const token = authHeader.substring(7);
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as { email: string };
+    return payload as { phone: string };
   } catch {
     return null;
   }

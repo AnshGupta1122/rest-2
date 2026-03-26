@@ -4,16 +4,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, code } = await request.json();
+    const { phone, code } = await request.json();
 
-    if (!email || !code) {
-      return NextResponse.json({ error: 'Email and OTP code required' }, { status: 400 });
+    if (!phone || !code) {
+      return NextResponse.json({ error: 'Phone and OTP code required' }, { status: 400 });
     }
 
-    const otpRecord = await prisma.otpCode.findUnique({ where: { email } });
+    const otpRecord = await prisma.otpCode.findUnique({ where: { phone } });
 
     if (!otpRecord) {
-      return NextResponse.json({ error: 'No OTP requested for this email' }, { status: 400 });
+      return NextResponse.json({ error: 'No OTP requested for this phone number' }, { status: 400 });
     }
 
     if (otpRecord.expiresAt < new Date()) {
@@ -27,19 +27,19 @@ export async function POST(request: NextRequest) {
     // OTP Verified Successfully!
     
     // Delete the used OTP
-    await prisma.otpCode.delete({ where: { email } });
+    await prisma.otpCode.delete({ where: { phone } });
 
     // Find or create customer
     await prisma.customer.upsert({
-      where: { email },
+      where: { phone },
       update: {}, // Just touch it or leave as is
-      create: { email }
+      create: { phone }
     });
 
     // Sign JWT
-    const token = await signCustomerToken({ email });
+    const token = await signCustomerToken({ phone });
 
-    return NextResponse.json({ success: true, token, email });
+    return NextResponse.json({ success: true, token, phone });
   } catch (error) {
     console.error('Verify OTP error:', error);
     return NextResponse.json({ error: 'Failed to verify OTP' }, { status: 500 });
